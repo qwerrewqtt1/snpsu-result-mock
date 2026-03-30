@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Results</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: radial-gradient(ellipse at center, #e8e8e8 0%, #c8c8c8 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    background: #ffffff;
+    border-bottom: 3px solid #5b9bd5;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+  #header-logo {
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+  }
+  #header-logo img {
+    height: 200px;
+    width: auto;
+  }
+  #header-title {
+    padding: 0 18px;
+    font-size: 27px;
+    font-weight: bold;
+    color: #7030a0;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── FOOTER ── */
+  #footer {
+    background: #2e86c1;
+    color: #ffffff;
+    text-align: center;
+    padding: 13px 10px;
+    font-size: 13px;
+    margin-top: auto;
+  }
+
+  /* ══════════════════════════════
+     LOGIN PAGE
+  ══════════════════════════════ */
+  #loginPage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  #card {
+    background: linear-gradient(135deg, #7ecec4 0%, #5bbcd6 40%, #7dd6c8 70%, #6ecfbe 100%);
+    border-radius: 14px;
+    padding: 40px 44px 44px;
+    width: 490px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  }
+  #card input[type="text"],
+  #card input[type="date"],
+  #card input.dob-field {
+    display: block;
+    width: 100%;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #555;
+    background: #ffffff;
+    border: none;
+    border-bottom: 2px solid #5b9bd5;
+    border-radius: 3px 3px 0 0;
+    outline: none;
+    margin-bottom: 14px;
+  }
+  #card input::placeholder { color: #aaa; letter-spacing: 1px; }
+  #card input:focus { border-bottom-color: #17375e; }
+  #card button {
+    margin-top: 10px;
+    background: #5b8db8;
+    color: #ffffff;
+    border: none;
+    padding: 9px 26px;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  #card button:hover { background: #3d6f9e; }
+  .err-msg {
+    color: #7b0000;
+    background: #ffe0e0;
+    border-radius: 4px;
+    padding: 7px 12px;
+    font-size: 12px;
+    margin-top: 10px;
+    display: none;
+  }
+
+  /* ══════════════════════════════
+     RESULT PAGE
+  ══════════════════════════════ */
+  #resultPage {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    background: #ffffff;
+  }
+
+  #resultBody {
+    padding: 0 18px 18px;
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* Blue top bar */
+  .result-topbar {
+    background: #2e86c1;
+    height: 8px;
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .result-main-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 14px 0 10px;
+    color: #000;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  /* Info rows */
+  .info-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    padding: 4px 0;
+    font-size: 14px;
+  }
+  .info-row .lbl { color: #333; min-width: 80px; }
+  .info-row .sep { margin: 0 6px; }
+  .info-row .val { font-weight: bold; color: #000; }
+  .info-split {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  /* Marks table */
+  .marks-wrap { margin-top: 14px; overflow-x: auto; }
+  .marks-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+  .marks-table th {
+    background: #f2f2f2;
+    border: 1px solid #bbb;
+    padding: 7px 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #000;
+    white-space: nowrap;
+  }
+  .marks-table th:first-child { text-align: left; }
+  .marks-table td {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #000;
+  }
+  .marks-table td:first-child { text-align: left; }
+  .marks-table tbody tr:hover td { background: #f9f9f9; }
+
+  /* SGPA / CGPA */
+  .gpa-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 2px 4px;
+    color: #000;
+  }
+
+  /* Grade tables */
+  .grade-section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #000;
+    margin: 16px 0 6px;
+  }
+  .grade-table {
+    border-collapse: collapse;
+    font-size: 13px;
+    width: 100%;
+    margin-bottom: 6px;
+  }
+  .grade-table th {
+    border: 1px solid #bbb;
+    padding: 6px 10px;
+    text-align: center;
+    background: #f2f2f2;
+    font-weight: bold;
+  }
+  .grade-table td {
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    text-align: center;
+  }
+  .grade-table tr:first-child td { font-weight: bold; }
+
+  .other-grades {
+    font-size: 13px;
+    margin: 8px 0 14px;
+    color: #333;
+  }
+
+  .back-btn {
+    display: inline-block;
+    margin: 10px 0 4px;
+    background: #2e86c1;
+    color: #fff;
+    border: none;
+    padding: 7px 20px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+  }
+  .back-btn:hover { background: #1a6a9e; }
+</style>
+</head>
+<body>
+
+<!-- HEADER (always visible) -->
+<div id="header">
+  <div id="header-logo">
+    <img src="1.png"
+         alt="Sapthagiri NPS University"
+         onerror="this.onerror=null;this.src='';this.style.display='none';" />
+  </div>
+  
+</div>
+
+<!-- ══ LOGIN PAGE ══ -->
+<div id="loginPage">
+  <div id="card">
+    <input type="text" id="usnInput" placeholder="USN" maxlength="20" />
+    <input type="text" id="dobInput" placeholder="DATE OF BIRTH (YYYY-MM-DD)"
+           onfocus="this.type='date'" onblur="if(!this.value)this.type='text'" />
+    <button onclick="doLogin()">SUBMIT</button>
+    <div class="err-msg" id="errMsg">Invalid USN or Date of Birth. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══ RESULT PAGE ══ -->
+<div id="resultPage">
+  <div class="result-topbar"></div>
+  <div id="resultBody">
+
+    <div class="result-main-title">Provisional Results of SEE</div>
+
+    <div class="info-split">
+      <div class="info-row">
+        <span class="lbl">Name</span>
+        <span class="sep">:</span>
+        <span class="val" id="rName"></span>
+      </div>
+      <div class="info-row">
+        <span class="lbl">USN</span>
+        <span class="sep">:</span>
+        <span class="val" id="rUSN"></span>
+      </div>
+    </div>
+
+    <div class="info-split" style="margin-top:4px;">
+      <div class="info-row">
+        <span class="lbl">Program:</span>
+        <span class="sep"></span>
+        <span class="val" id="rProgram"></span>
+      </div>
+      <div class="info-row">
+        <span class="lbl">Semester</span>
+        <span class="sep">:</span>
+        <span class="val" id="rSem"></span>
+      </div>
+    </div>
+
+    <div class="marks-wrap">
+      <table class="marks-table">
+        <thead>
+          <tr>
+            <th>Course Name</th>
+            <th>Course Code</th>
+            <th>Credits</th>
+            <th>CIE</th>
+            <th>SEE</th>
+            <th>Total<br>Marks</th>
+            <th>Letter<br>Grade</th>
+            <th>Credit<br>Earned</th>
+            <th>Grade<br>Points</th>
+            <th>Credit<br>Points</th>
+          </tr>
+        </thead>
+        <tbody id="marksBody"></tbody>
+      </table>
+    </div>
+
+    <div class="gpa-row">
+      <span>SGPA: <span id="rSGPA"></span></span>
+      <span>CGPA: <span id="rCGPA"></span></span>
+      <span></span>
+    </div>
+
+    <!-- Grade and Grade Points – UG -->
+    <div class="grade-section-title">Grade and Grade Points – UG</div>
+    <table class="grade-table">
+      <thead>
+        <tr>
+          <th>Level</th><th>Outstanding</th><th>Excellent</th><th>Very Good</th>
+          <th>Good</th><th>Above Average</th><th>Average</th><th>Fail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Letter Grade</td><td>A+</td><td>A</td><td>B+</td><td>B</td><td>P</td><td>P</td><td>F</td></tr>
+        <tr><td>Grade Points</td><td>10</td><td>09</td><td>08</td><td>07</td><td>06</td><td>05</td><td>04</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Grade and Grade Points – PG -->
+    <div class="grade-section-title">Grade and Grade Points – PG</div>
+    <table class="grade-table">
+      <thead>
+        <tr>
+          <th>Level</th><th>Outstanding</th><th>Excellent</th><th>Very Good</th>
+          <th>Good</th><th>Above Average</th><th>Poor</th><th>Fail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Letter Grade</td><td>S</td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
+        <tr><td>Grade Points</td><td>10</td><td>09</td><td>08</td><td>07</td><td>06</td><td>04</td><td>00</td></tr>
+      </tbody>
+    </table>
+
+    <div class="other-grades">
+      Other Grades:<br>
+      &nbsp;&nbsp;P – Passed, NP – Not Passed, NE – Not Eligible,
+    </div>
+
+    <button class="back-btn" onclick="goBack()">&#8592; Back</button>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div id="footer">Powered by IonEMS (www.ionidea.com)</div>
+
+<script>
+  // ── Student database ──
+  const students = {
+    "24SUUBECS2180": {
+      dob: "2006-04-11",
+      name: "SUPRITH K",
+      program: "Bachelor of Engineering in Computer Science and Engineering",
+      semester: "3",
+      sgpa: "6.2",
+      cgpa: "6.37",
+      subjects: [
+        { name:"PROBABILITY & STATISTICAL METHODS", code:"24BECS301", credits:3, cie:31, see:24, total:55, grade:"C", earned:"P", gp:3, cp:6 },
+        { name:"OBJECT ORIENTED PROGRAMMING",        code:"24BECS302", credits:4, cie:30, see:31, total:61, grade:"B", earned:"P", gp:4, cp:7 },
+        { name:"OPERATING SYSTEM",                   code:"24BECS303", credits:4, cie:28, see:25, total:53, grade:"C", earned:"P", gp:4, cp:6 },
+        { name:"WEB TECHNOLOGY",                     code:"24BECS304", credits:3, cie:34, see:22, total:56, grade:"C", earned:"P", gp:3, cp:6 },
+        { name:"SOFTWARE ENGINEERING",               code:"24BECS305", credits:4, cie:30, see:26, total:56, grade:"C", earned:"P", gp:4, cp:6 },
+        { name:"COMPUTER NETWORKS",                  code:"24BECS306", credits:4, cie:36, see:24, total:60, grade:"B", earned:"P", gp:4, cp:7 },
+        { name:"INTERNET OF THINGS",                 code:"24BECS307", credits:3, cie:35, see:21, total:56, grade:"C", earned:"B", gp:3, cp:6 },
+        { name:"SOFT SKILLS FOR ENGINEERS",          code:"24BECS308", credits:1, cie:32, see:35, total:67, grade:"B", earned:"P", gp:1, cp:7 },
+        { name:"OUTREACH ACTIVITY - 1",              code:"24BEDRA309",credits:1, cie:98, see:0,  total:98, grade:"A+",earned:"P", gp:1, cp:9 },
+      ]
+    }
+  };
+
+  function doLogin() {
+    const usn = document.getElementById('usnInput').value.trim().toUpperCase();
+    const dob = document.getElementById('dobInput').value.trim();
+    const err = document.getElementById('errMsg');
+
+    const student = students[usn];
+    if (!student || student.dob !== dob) {
+      err.style.display = 'block';
+      return;
+    }
+    err.style.display = 'none';
+    showResult(usn, student);
+  }
+
+  function showResult(usn, s) {
+    document.getElementById('rName').textContent    = s.name;
+    document.getElementById('rUSN').textContent     = usn;
+    document.getElementById('rProgram').textContent = s.program;
+    document.getElementById('rSem').textContent     = s.semester;
+    document.getElementById('rSGPA').textContent    = s.sgpa;
+    document.getElementById('rCGPA').textContent    = s.cgpa;
+
+    const tbody = document.getElementById('marksBody');
+    tbody.innerHTML = '';
+    s.subjects.forEach(sub => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${sub.name}</td>
+        <td>${sub.code}</td>
+        <td>${sub.credits}</td>
+        <td>${sub.cie}</td>
+        <td>${sub.see}</td>
+        <td>${sub.total}</td>
+        <td>${sub.grade}</td>
+        <td>${sub.earned}</td>
+        <td>${sub.gp}</td>
+        <td>${sub.cp}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('loginPage').style.display  = 'none';
+    const rp = document.getElementById('resultPage');
+    rp.style.display = 'flex';
+    window.scrollTo(0, 0);
+  }
+
+  function goBack() {
+    document.getElementById('resultPage').style.display = 'none';
+    document.getElementById('loginPage').style.display  = 'flex';
+    document.getElementById('usnInput').value = '';
+    document.getElementById('dobInput').value = '';
+    document.getElementById('dobInput').type  = 'text';
+  }
+</script>
+</body>
+</html>
